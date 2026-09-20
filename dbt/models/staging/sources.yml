@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: Series crudas tal como las devuelve la API de datos.gob.ar.
+    loaded_at_field: cargado_en
+    freshness:
+      warn_after: {count: 3, period: day}
+      error_after: {count: 30, period: day}
+    tables:
+      - name: series_raw
+        columns:
+          - name: serie
+            tests: [not_null]
+          - name: fecha
+            tests: [not_null]
+          - name: valor
+            tests: [not_null]

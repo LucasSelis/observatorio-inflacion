@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_ipc
+    columns:
+      - name: mes
+        tests: [not_null, unique]
+      - name: ipc_nivel
+        tests: [not_null]
+  - name: stg_salarios
+    columns:
+      - name: mes
+        tests: [not_null, unique]
+  - name: stg_emae
+    columns:
+      - name: mes
+        tests: [not_null, unique]
+  - name: stg_dolar
+    columns:
+      - name: mes
+        tests: [not_null, unique]
+      - name: dolar_prom
+        tests: [not_null]
+  - name: stg_reservas
+    columns:
+      - name: mes
+        tests: [not_null, unique]

@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: mart_mensual
+    description: Panel mensual (una fila por mes con IPC) con inflación, dólar, salarios y actividad.
+    columns:
+      - name: mes
+        tests: [not_null, unique]
+      - name: ipc_nivel
+        tests: [not_null]
+      - name: dolar_prom
+        tests: [not_null]

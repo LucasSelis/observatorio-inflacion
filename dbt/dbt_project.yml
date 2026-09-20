@@ -1,0 +1,17 @@
+name: observatorio
+version: "1.0.0"
+config-version: 2
+profile: observatorio
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+models:
+  observatorio:
+    staging:
+      +materialized: view
+      +schema: staging
+    marts:
+      +materialized: table
+      +schema: marts

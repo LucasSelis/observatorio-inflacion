@@ -1,0 +1,8 @@
+observatorio:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # OBS_DB permite apuntar a otra base (CI, tests) sin tocar este archivo.
+      path: "{{ env_var('OBS_DB', '../observatorio.duckdb') }}"
+      threads: 1
