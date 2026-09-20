@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+# Permisos minimos: el workflow solo necesita leer el codigo.
+permissions:
+  contents: read
+
 jobs:
   pruebas:
     runs-on: ubuntu-latest
