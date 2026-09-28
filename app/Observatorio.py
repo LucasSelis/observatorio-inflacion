@@ -1,13 +1,11 @@
 """Observatorio de inflación: la pregunta, la respuesta y la evidencia."""
-import os
-from pathlib import Path
-
-import duckdb
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-RUTA_DB = Path(os.environ.get("OBS_DB", Path(__file__).resolve().parent.parent / "observatorio.duckdb"))
+from _base import RAIZ, ruta_base
+from observatorio import carga
+
 ETIQUETAS = {"naive": "Igual al mes anterior", "media3": "Promedio 3 meses", "ar2": "AR(2)",
              "arx_dolar": "AR(2) + dólar", "arx_completo": "AR(2) + dólar + salarios + actividad"}
 
@@ -16,18 +14,14 @@ st.set_page_config(page_title="Observatorio de inflación", page_icon="📈", la
 
 @st.cache_data(ttl=300)
 def leer(tabla: str, ruta: str) -> pd.DataFrame:
-    con = duckdb.connect(ruta, read_only=True)
+    con = carga.abrir_solo_lectura(ruta)
     try:
         return con.execute(f"select * from {tabla}").df()
     finally:
         con.close()
 
 
-if not RUTA_DB.exists():
-    st.error("No encontré la base. Corré `python -m observatorio.cli ingesta` y `dbt build` (ver README).")
-    st.stop()
-
-ruta = str(RUTA_DB)
+ruta = ruta_base()
 mart = leer("marts.mart_mensual", ruta)
 pred = leer("resultados.predicciones", ruta)
 metricas = leer("resultados.metricas", ruta)
@@ -38,6 +32,7 @@ st.title("¿Se puede anticipar la inflación del mes que viene?")
 st.markdown("Probé si el **dólar, los salarios y la actividad** ayudan a pronosticar el IPC del mes siguiente mejor que "
             "la regla más simple: *el mes que viene va a dar lo mismo que este mes*. Backtest mensual con ventana "
             "expansiva y solo información publicada hasta cada fecha.")
+st.page_link("pages/1_Explorador_SQL.py", label="Probá tus propias consultas SQL sobre estos datos", icon="🔎")
 
 muestra = st.radio("Período evaluado", ["completa", "desde_2024"], horizontal=True,
                    format_func=lambda m: "Toda la muestra" if m == "completa" else "Desde ene-2024 (post-devaluación)")
@@ -82,6 +77,9 @@ fig2.add_trace(go.Bar(x=mart["mes"], y=mart["inflacion_m"], name="Inflación men
 fig2.add_trace(go.Scatter(x=mart["mes"], y=mart["dolar_var_m"], name="Dólar, var. mensual (%)", line=dict(color="#dd6b20")))
 fig2.update_layout(height=330, margin=dict(t=10), legend=dict(orientation="h", y=-0.2))
 st.plotly_chart(fig2, use_container_width=True)
+
+with st.expander("Ver el SQL que arma este panel (modelo dbt `mart_mensual`)"):
+    st.code((RAIZ / "dbt" / "models" / "marts" / "mart_mensual.sql").read_text(encoding="utf-8"), language="sql")
 
 with st.expander("Limitaciones y decisiones"):
     st.markdown(

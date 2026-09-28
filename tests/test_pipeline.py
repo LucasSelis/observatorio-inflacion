@@ -42,6 +42,16 @@ def test_una_inflacion_absurda_corta_el_pipeline(db):
         pipeline.construir_modelos(db)
 
 
+def test_asegurar_base_arma_todo_y_es_idempotente(tmp_path):
+    ruta = tmp_path / "nueva.duckdb"
+    assert not pipeline.base_lista(ruta)
+    pipeline.asegurar_base(ruta)
+    assert pipeline.base_lista(ruta)
+    antes = ruta.stat().st_mtime_ns
+    pipeline.asegurar_base(ruta)  # ya está lista: no debe reconstruir
+    assert ruta.stat().st_mtime_ns == antes
+
+
 def test_frescura_detecta_series_viejas(db):
     # El snapshot versionado llega hasta ago-2026: "hoy" se fija para que el test no dependa del reloj real.
     assert pipeline.problemas_de_frescura(db, hoy=date(2026, 9, 3)) == []

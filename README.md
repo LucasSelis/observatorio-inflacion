@@ -30,7 +30,7 @@ dólar, reservas          upsert idempotente   + 22 tests de datos              
 - **Modelado** (`dbt/`): staging calcula las variaciones sobre toda la historia (para no perder los primeros 12 meses del EMAE interanual) y el mart las une por mes. 22 tests: unicidad, no nulos, y tres singulares que cortan el pipeline: **meses faltantes en el IPC**, **inflación mensual fuera de -5%..50%** y **meses de dólar con pocos datos**.
 - **Backtest** (`observatorio/pronostico.py`): ventana expansiva, un reajuste por mes, solo con información publicada hasta cada fecha (salarios y EMAE con 2 meses de demora). Métricas MAE y RMSE, e intervalo por bootstrap de bloques del ahorro de error contra el ingenuo.
 - **Orquestación** (`observatorio/definiciones.py`): tres assets de Dagster (`series_crudas` → `modelos_dbt` → `backtest`), un asset check de frescura y una corrida diaria. Si un test de dbt falla, el backtest no corre.
-- **App** (`app/streamlit_app.py`): la pregunta, la tabla de errores con su intervalo, el pronóstico del mes próximo, y los gráficos.
+- **App** (`app/Observatorio.py`): la pregunta, la tabla de errores con su intervalo, el pronóstico del mes próximo, y los gráficos. Incluye un **Explorador SQL** (`app/pages/1_Explorador_SQL.py`) donde el visitante escribe sus propias consultas sobre los datos, con siete ejemplos (window functions, CTEs, rankings). Corre en DuckDB de solo lectura, sin acceso a archivos, con una sola sentencia `SELECT`, tope de filas y de tiempo (ver DECISIONES.md, punto 22).
 
 ## Cómo correrlo
 
@@ -39,7 +39,7 @@ Necesita Python 3.12. No usa Docker ni servicios externos: la base es un archivo
 ```bash
 pip install -r requirements.txt
 python -m observatorio.cli actualizar               # baja las series, dbt build (con tests) y backtest
-streamlit run app/streamlit_app.py
+streamlit run app/Observatorio.py --server.address 127.0.0.1
 ```
 
 Sin red, con la copia versionada de los datos (`datos/snapshot/`):

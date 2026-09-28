@@ -1,0 +1,4 @@
+# Para desarrollar y correr los tests: lo de la app, más orquestación y pytest.
+-r requirements.txt
+dagster==1.13.23
+pytest==9.1.1

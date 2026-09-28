@@ -21,6 +21,20 @@ def conectar(ruta: str | Path | None = None) -> duckdb.DuckDBPyConnection:
     return con
 
 
+def abrir_solo_lectura(ruta: str | Path) -> duckdb.DuckDBPyConnection:
+    """Conexión para la app pública: solo lectura, sin acceso a archivos y con la configuración bloqueada.
+
+    DuckDB comparte la instancia entre conexiones al mismo archivo dentro de un proceso y exige que la configuración
+    coincida: por eso TODA lectura de la app pasa por esta función (si una leyera con otra config, fallaría al azar).
+    """
+    return duckdb.connect(str(ruta), read_only=True, config={
+        "enable_external_access": False,
+        "memory_limit": "512MB",
+        "threads": 1,
+        "lock_configuration": True,
+    })
+
+
 def asegurar_esquema(con: duckdb.DuckDBPyConnection) -> None:
     con.execute("CREATE SCHEMA IF NOT EXISTS raw")
     con.execute(

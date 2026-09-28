@@ -1,6 +1,4 @@
 [server]
-# Solo esta PC puede abrir la app; para exponerla hay que cambiarlo a proposito.
-address = "127.0.0.1"
 headless = true
 
 [browser]

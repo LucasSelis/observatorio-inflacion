@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import os
+import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
+import duckdb
 from dbt.adapters.duckdb.connections import DuckDBConnectionManager
 from dbt.adapters.factory import cleanup_connections
 from dbt.cli.main import dbtRunner
@@ -44,12 +46,41 @@ def _soltar_duckdb() -> None:
 def construir_modelos(ruta_db: str | Path) -> None:
     """Corre `dbt build` (modelos + tests). Si algún test falla, levanta excepción y el pipeline se corta."""
     os.environ["OBS_DB"] = str(ruta_db)
+    # Logs y artefactos de dbt van a una carpeta temporal: en un servidor el repo puede ser de solo lectura.
+    temporal = tempfile.mkdtemp(prefix="dbt_")
     try:
-        resultado = dbtRunner().invoke(["build", "--project-dir", str(DIR_DBT), "--profiles-dir", str(DIR_DBT)])
+        resultado = dbtRunner().invoke(["build", "--project-dir", str(DIR_DBT), "--profiles-dir", str(DIR_DBT),
+                                        "--target-path", temporal, "--log-path", temporal])
     finally:
         _soltar_duckdb()
     if not resultado.success:
         raise RuntimeError(f"dbt build falló: {resultado.exception or 'hay tests o modelos con error'}")
+
+
+def base_lista(ruta_db: str | Path) -> bool:
+    """¿Existe la base con el mart y los resultados del backtest?"""
+    if not Path(ruta_db).exists():
+        return False
+    try:
+        con = carga.abrir_solo_lectura(ruta_db)
+    except duckdb.Error:
+        return False
+    try:
+        n = con.execute("select count(*) from information_schema.tables "
+                        "where (table_schema, table_name) in (('marts', 'mart_mensual'), "
+                        "('resultados', 'metricas'), ('resultados', 'pronostico_actual'))").fetchone()[0]
+        return n == 3
+    finally:
+        con.close()
+
+
+def asegurar_base(ruta_db: str | Path) -> None:
+    """Si la base no está lista (primer arranque en un servidor), la arma desde el snapshot versionado."""
+    if base_lista(ruta_db):
+        return
+    ingestar(ruta_db, "snapshot")  # idempotente: si la base existía a medias, solo completa lo que falta
+    construir_modelos(ruta_db)
+    backtest(ruta_db)
 
 
 def backtest(ruta_db: str | Path, dir_resultados: str | Path | None = None) -> dict:

@@ -1,11 +1,9 @@
-# Versiones con las que se probó todo (Python 3.12).
+# Lo que necesita la app (y el servidor donde se publica). Versiones con las que se probó todo (Python 3.12).
 duckdb==1.5.5
 dbt-core==1.12.5
 dbt-duckdb==1.11.0
-dagster==1.13.23
 statsmodels==0.15.0
 pandas==3.0.6
 numpy==2.5.3
 streamlit==1.64.0
 plotly==7.1.0
-pytest==9.1.1
