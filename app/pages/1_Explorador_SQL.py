@@ -15,7 +15,7 @@ st.markdown("Consultá con SQL los mismos datos del observatorio (IPC, dólar, s
 
 with st.expander("Tablas disponibles"):
     st.dataframe(consultas.tablas_disponibles(ruta).rename(columns={"tabla": "Tabla", "columnas": "Columnas"}),
-                 hide_index=True, use_container_width=True)
+                 hide_index=True, width="stretch")
 
 nombre = st.selectbox("Ejemplos", list(consultas.EJEMPLOS), index=0)
 ejemplo_nuevo = st.session_state.get("_ejemplo") != nombre
@@ -37,4 +37,4 @@ if st.session_state.get("error"):
 elif st.session_state.get("resultado") is not None:
     res = st.session_state["resultado"]
     st.caption(f"{len(res.tabla)} filas" + (f" (se muestran las primeras {consultas.MAX_FILAS})" if res.truncado else ""))
-    st.dataframe(res.tabla, hide_index=True, use_container_width=True)
+    st.dataframe(res.tabla, hide_index=True, width="stretch")

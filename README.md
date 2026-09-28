@@ -2,6 +2,8 @@
 
 **¿Se puede anticipar la inflación del mes que viene con el dólar, la actividad y los salarios, mejor que con una regla ingenua ("el mes que viene da lo mismo que este mes")?**
 
+**Probalo en vivo: [observatorio-inflacion.streamlit.app](https://observatorio-inflacion.streamlit.app)**, con un **Explorador SQL** donde podés escribir tus propias consultas sobre los datos.
+
 Respuesta corta, después de un backtest de 77 meses: **no**. Ningún modelo le gana a la regla ingenua con evidencia estadística, y el proyecto está armado para poder decir eso con honestidad.
 
 | Modelo (77 meses, 2020-04 a 2026-08) | Error medio | vs. ingenuo | Ahorro medio de error, IC 90% |

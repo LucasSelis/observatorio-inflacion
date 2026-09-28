@@ -43,7 +43,9 @@ st.subheader("Error de cada modelo")
 tabla = m[["Modelo", "mae", "rmse", "mae_vs_naive_pct", "ahorro_medio", "ic_bajo", "ic_alto"]].rename(columns={
     "mae": "Error medio (pp)", "rmse": "RMSE (pp)", "mae_vs_naive_pct": "Error vs. ingenuo (%)",
     "ahorro_medio": "Ahorro medio (pp)", "ic_bajo": "IC90 bajo", "ic_alto": "IC90 alto"})
-st.dataframe(tabla.style.format(precision=2, na_rep="—"), hide_index=True, use_container_width=True)
+for columna in tabla.columns[1:]:  # texto en vez de números para poder mostrar "—" donde no aplica (fila del modelo ingenuo)
+    tabla[columna] = tabla[columna].map(lambda v: "—" if pd.isna(v) else f"{v:.2f}")
+st.dataframe(tabla, hide_index=True, width="stretch")
 st.caption("Ahorro medio = cuánto menos se equivoca el modelo que la regla ingenua (en puntos porcentuales); "
            "positivo es mejor. IC90 = intervalo por bootstrap: si incluye el 0, no hay evidencia de mejora.")
 mejores = m[(m["modelo"] != "naive") & (m["significativo"] == True)]  # noqa: E712
@@ -69,14 +71,14 @@ fig = go.Figure(go.Scatter(x=p["mes_objetivo"], y=p["real"], name="IPC real", li
 for n in sel:
     fig.add_trace(go.Scatter(x=p["mes_objetivo"], y=p[n], name=ETIQUETAS[n], line=dict(dash="dot")))
 fig.update_layout(height=380, yaxis_title="Inflación mensual (%)", margin=dict(t=10), legend=dict(orientation="h", y=-0.2))
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 st.subheader("El panel de datos")
 fig2 = go.Figure()
 fig2.add_trace(go.Bar(x=mart["mes"], y=mart["inflacion_m"], name="Inflación mensual (%)", marker_color="#2b6cb0"))
 fig2.add_trace(go.Scatter(x=mart["mes"], y=mart["dolar_var_m"], name="Dólar, var. mensual (%)", line=dict(color="#dd6b20")))
 fig2.update_layout(height=330, margin=dict(t=10), legend=dict(orientation="h", y=-0.2))
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width="stretch")
 
 with st.expander("Ver el SQL que arma este panel (modelo dbt `mart_mensual`)"):
     st.code((RAIZ / "dbt" / "models" / "marts" / "mart_mensual.sql").read_text(encoding="utf-8"), language="sql")
