@@ -38,7 +38,7 @@ Registro de las decisiones no obvias del proyecto, con el porqué y, cuando corr
 
 ## Ingeniería
 
-**16. Los tests de dbt tienen que poder fallar.** Los 28 tests de dbt dieron verde a la primera, lo cual no prueba nada. Por eso hay tests de pytest que borran un mes del IPC y triplican otro valor y verifican que `dbt build` corta el pipeline.
+**16. Los tests de dbt tienen que poder fallar.** Los 28 pasos de `dbt build` (6 modelos y 22 tests de datos) dieron verde a la primera, lo cual no prueba nada. Por eso hay tests de pytest que borran un mes del IPC y triplican otro valor y verifican que `dbt build` corta el pipeline.
 
 **17. dbt bloqueaba el archivo DuckDB.** Al correr dbt dentro del proceso (Dagster, tests) `dbt-duckdb` deja una conexión de clase abierta; `cleanup_connections()` solo la des-referencia sin cerrarla. Resultado: mientras el proceso de Dagster vivía, la app de Streamlit no podía abrir la base (DuckDB permite un solo escritor por archivo y no deja mezclar configuraciones). Ahora `pipeline._soltar_duckdb()` la cierra explícitamente. Usa un atributo interno (`_ENV`), por eso hay un test de regresión que abre la base en solo lectura justo después del build.
 
